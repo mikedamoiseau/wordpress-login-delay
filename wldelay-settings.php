@@ -74,10 +74,18 @@ class WPDelay_Settings {
             array( $this, 'print_section_info' ), // Callback
             'wp-login-delay-admin' // Page
         );
+
+	    add_settings_field(
+		    'wldelay_delay_random',                        // id
+		    'Check this box to use a random delay',                     // title
+		    array( $this, 'delay_callback_random' ),       // callback function
+		    'wp-login-delay-admin',                 // page
+		    'wldelay_setting_section_id'            // section
+	    );
         
         add_settings_field(
             'wldelay_delay',                        // id
-            'Delay in seconds',                     // title
+            'Set a delay (in seconds)',                     // title
             array( $this, 'delay_callback' ),       // callback function
             'wp-login-delay-admin',                 // page
             'wldelay_setting_section_id'            // section
@@ -96,6 +104,8 @@ class WPDelay_Settings {
         if( isset( $input['wldelay_delay'] ) )
             $new_input['wldelay_delay'] = absint( $input['wldelay_delay'] );
 
+        $new_input['wldelay_delay_random'] = ! empty( $input['wldelay_delay_random'] );
+
         return $new_input;
     }
 
@@ -104,7 +114,22 @@ class WPDelay_Settings {
      */
     public function print_section_info()
     {
-        print 'Enter your settings below:';
+    ?>
+        Enter your settings below
+
+        <script>
+            jQuery(document).ready( function() {
+                var isRandomChecked = jQuery( '#wldelay_delay_random' ).prop( 'checked' )
+                jQuery( '#wldelay_delay' ).parent().parent().toggle( ! isRandomChecked );
+
+                jQuery( '#wldelay_delay_random' ).on('click', function( e ) {
+                    var isRandomChecked = jQuery( this ).prop( 'checked' )
+
+                    jQuery( '#wldelay_delay' ).parent().parent().toggle( ! isRandomChecked );
+                });
+            });
+        </script>
+    <?php
     }
 
     /** 
@@ -116,6 +141,14 @@ class WPDelay_Settings {
             '<input type="text" id="wldelay_delay" name="wldelay_options[wldelay_delay]" value="%d" />',
             isset( $this->options['wldelay_delay'] ) ? esc_attr( $this->options['wldelay_delay']) : self::_DEFAULT_DELAY_IN_SECONDS
         );
+    }
+
+    public function delay_callback_random()
+    {
+	    printf(
+		    '<input type="checkbox" id="wldelay_delay_random" name="wldelay_options[wldelay_delay_random]" value="1" %s />',
+		    ! empty( $this->options['wldelay_delay_random'] ) ? 'checked="checked"' : ''
+	    );
     }
 
 }
